@@ -36,6 +36,7 @@ ALLOWED_HOSTS = []
 
 INSTALLED_APPS = [
     'customer.apps.CustomerConfig',
+    'customerOrder.apps.CustomerorderConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
