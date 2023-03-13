@@ -1,9 +1,14 @@
 from customer.models import Customer
 from customer.serializers import CustomerSerializer
 from rest_framework import generics
+from users.authentication import BearerAuthentication
+
+from users.authentication import IsAuthenticatedSub
 
 
 class CustomerList(generics.ListCreateAPIView):
+    authentication_classes = [BearerAuthentication]
+    permission_classes = [IsAuthenticatedSub]
     """
     This endpoint allows you to retrieve customers from the system. You can use this endpoint to retrieve customers
     from the system entirely.

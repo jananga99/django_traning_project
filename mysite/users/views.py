@@ -3,24 +3,8 @@ from django.views.decorators.csrf import csrf_exempt
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework.parsers import JSONParser
-from dotenv import load_dotenv
-import os
+import mysite.firebaseConfig as firebaseConfig
 
-load_dotenv()
-
-config = {
-    "apiKey": os.environ.get("API_KEY"),
-    "authDomain": os.environ.get("AUTH_DOMAIN"),
-    "databaseURL": os.environ.get("DATABASE_URL"),
-    "projectId": os.environ.get("PROJECT_ID"),
-    "storageBucket": os.environ.get("STORAGE_BUCKET"),
-    "messagingSenderId": os.environ.get("MESSAGING_SENDER_ID"),
-    "appId": os.environ.get("APP_ID"),
-    "measurementId": os.environ.get("MEASUREMENT_ID")
-}
-firebase = pyrebase.initialize_app(config)
-auth = firebase.auth()
-database = firebase.database()
 
 
 @csrf_exempt
@@ -33,7 +17,7 @@ def signIn(request):
     try:
         print(request.headers)
         # print(request.headers.Authorization)
-        user = auth.sign_in_with_email_and_password(email, password)
+        user = firebaseConfig.auth.sign_in_with_email_and_password(email, password)
         print(user)
         session_id = user['idToken']
         request.session['uid'] = str(session_id)
@@ -70,7 +54,7 @@ def signUp(request):
     password = data.get('password')
     name = data.get('username')
     try:
-        user = auth.create_user_with_email_and_password(email, password)
+        user = firebaseConfig.auth.create_user_with_email_and_password(email, password)
         print(user)
         uid = user['localId']
         print(uid)
