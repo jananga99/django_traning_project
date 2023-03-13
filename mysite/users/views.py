@@ -1,8 +1,7 @@
-import requests
-from django.http import JsonResponse
-from django.shortcuts import render
 import pyrebase
 from django.views.decorators.csrf import csrf_exempt
+from rest_framework.response import Response
+from rest_framework.decorators import api_view
 from rest_framework.parsers import JSONParser
 from dotenv import load_dotenv
 import os
@@ -19,66 +18,59 @@ config = {
     "appId": os.environ.get("APP_ID"),
     "measurementId": os.environ.get("MEASUREMENT_ID")
 }
-# Initialising database,auth and firebase for further use
 firebase = pyrebase.initialize_app(config)
-authe = firebase.auth()
+auth = firebase.auth()
 database = firebase.database()
 
 
+@csrf_exempt
+@api_view(['POST'])
 def signIn(request):
-    return render(request, "Signin.html")
+    data = JSONParser().parse(request)
+    email = data.get('email')
+    password = data.get('password')
 
-
-def home(request):
-    return render(request, "Home.html")
-
-
-def postsignIn(request):
-    print("Start of post request")
-    print(request.POST['email'])
-    email = request.POST.get('email')
-    pasw = request.POST.get('password')
     try:
-        # if there is no error then signin the user with given email and password
-        user = authe.sign_in_with_email_and_password(email, pasw)
+        print(request.headers)
+        # print(request.headers.Authorization)
+        user = auth.sign_in_with_email_and_password(email, password)
         print(user)
         session_id = user['idToken']
         request.session['uid'] = str(session_id)
         response_data = {
             'session_id': session_id,
+            'idToken': session_id,
             'email': email,
         }
-        return JsonResponse(response_data)
-        # return render(request, "Home.html", {"email": email})
+        return Response(response_data)
     except Exception as e:
         message = "An error occurred while signing in. Please try again later."
         print(e)
-        return JsonResponse({'error': message})
-        # return render(request, "Signin.html", {"message": message})
+        print(type(e))
+        return Response({'error': message})
 
 
-def logout(request):
+@csrf_exempt
+@api_view(['POST'])
+def signOut(request):
     try:
         del request.session['uid']
-    except:
-        pass
-    return render(request, "Signin.html")
+        return Response({'success': True})
+    except Exception as e:
+        print(e)
+        print(type(e))
+        return Response({'success': False})
 
 
+@csrf_exempt
+@api_view(['POST'])
 def signUp(request):
-    return render(request, "Signup.html")
-
-def postsignUp(request):
-    print("In begiuning")
     data = JSONParser().parse(request)
-    print(data)
     email = data.get('email')
-    passs = data.get('password')
+    password = data.get('password')
     name = data.get('username')
-    print(email, passs, name)
     try:
-        # creating a user with the given email and password
-        user = authe.create_user_with_email_and_password(email, passs)
+        user = auth.create_user_with_email_and_password(email, password)
         print(user)
         uid = user['localId']
         print(uid)
@@ -86,10 +78,9 @@ def postsignUp(request):
             'uid': uid,
             'email': email,
         }
-        return JsonResponse(response_data)
+        return Response(response_data)
     except Exception as e:
         print(e)
+        print(type(e))
         message = "Sign up error"
-        return JsonResponse({'error': message})
-        # return render(request, "Signup.html")
-    # return render(request, "Signin.html")
+        return Response({'error': message})
