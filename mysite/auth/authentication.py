@@ -3,8 +3,13 @@ from firebase_admin import auth
 from rest_framework.permissions import IsAuthenticated
 import mysite.firebaseConfig
 
+
 class BearerAuthentication(authentication.TokenAuthentication):
-    keyword = ['token', 'bearer']
+    """
+    Bearer token authentication
+    """
+
+    keyword = 'bearer'
 
     def authenticate(self, request):
         authHeader = authentication.get_authorization_header(request).split()
@@ -24,12 +29,12 @@ class BearerAuthentication(authentication.TokenAuthentication):
 
     def authenticate_credentials(self, token):
         user = auth.get_user(token['uid'])
-        return (user, token)
+        return user, token
 
 
 class IsAuthenticatedSub(IsAuthenticated):
     """
-    Allows access only to authenticated users.
+    Allows access only to authenticated auth.
     """
 
     def has_permission(self, request, view):
